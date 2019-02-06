@@ -1,15 +1,15 @@
 #include <iostream>
 #include <string>
 
-template<class... Ts>
+template <class... Ts>
 struct Class
 {
-    template<typename T>
-    void print(const T& value)
+    template <typename T>
+    void print(const T &value)
     {
         std::cout << value << ", ";
     }
-    
+
     Class(Ts... args)
     {
         std::cout << "This contains" << std::endl;
@@ -21,6 +21,6 @@ struct Class
 int main()
 {
     Class<int> x1(1);
-    Class<int,char> x2(2,'2');
-    Class<int,char, std::string> x3(2,'2', "test");
+    Class<int, char> x2(2, '2');
+    Class<int, char, std::string> x3(2, '2', "test");
 }
