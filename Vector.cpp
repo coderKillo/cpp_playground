@@ -1,4 +1,5 @@
 #include <vector>
+#include <set>
 #include <algorithm>
 #include <iostream>
 #include <chrono>
@@ -6,18 +7,54 @@
 
 using namespace std;
 
+struct MyStruct
+{
+    vector<int> vec;
+};
+
+void Test1(const vector<int> &vec)
+{
+    MyStruct struct1;
+    std::copy(vec.begin(), vec.end(), std::back_inserter(struct1.vec));
+}
+void Test2(const vector<int> &vec)
+{
+    MyStruct struct2;
+    struct2.vec.reserve(vec.size());
+    std::copy(vec.begin(), vec.end(), std::back_inserter(struct2.vec));
+}
+void Test3(const vector<int> &vec)
+{
+    MyStruct struct3{vector<int>(vec.begin(), vec.end())};
+}
+
 int main(int argc, char const *argv[])
 {
-    vector<int> vec1(1000000);
-    vector<int> vec2;
+    vector<int> vec1(10000000);
 
-    auto start = chrono::steady_clock::now();
+    for (auto i : {1, 2, 3})
+    {
+        auto start = chrono::steady_clock::now();
 
-    vec2.reserve(vec1.size());
-    std::copy(vec1.begin(), vec1.end(), std::back_inserter(vec2));
+        switch (i)
+        {
+        case 1:
+            Test1(vec1);
+            break;
+        case 2:
+            Test2(vec1);
+            break;
+        case 3:
+            Test3(vec1);
+            break;
 
-    auto end = chrono::steady_clock::now();
+        default:
+            break;
+        }
 
-    cout << chrono::duration_cast<chrono::microseconds>(end - start).count();
+        auto end = chrono::steady_clock::now();
+
+        cout << "Test " << i << " takes " << chrono::duration_cast<chrono::microseconds>(end - start).count() << " us" << endl;
+    }
     return 0;
 }
