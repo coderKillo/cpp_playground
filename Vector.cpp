@@ -12,6 +12,13 @@ struct MyStruct
     vector<int> vec;
 };
 
+struct MyStruct2
+{
+    int x;
+    int y;
+    int z;
+};
+
 void Test1(const vector<int> &vec)
 {
     MyStruct struct1;
@@ -56,5 +63,13 @@ int main(int argc, char const *argv[])
 
         cout << "Test " << i << " takes " << chrono::duration_cast<chrono::microseconds>(end - start).count() << " us" << endl;
     }
+    vector<MyStruct2> v;
+
+    for (auto i : {1, 2, 3, 4})
+    {
+        v.push_back({i, i, i});
+    }
+
+    cout << v[2].x;
     return 0;
 }
