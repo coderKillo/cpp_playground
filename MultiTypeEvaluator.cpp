@@ -1,4 +1,5 @@
 #include <tuple>
+#include <utility>
 #include <functional>
 #include <bitset>
 #include <iostream>
@@ -24,12 +25,19 @@ class MultiTypeEvaluator
 public:
     MultiTypeEvaluator(eval_foo_t && func):eval_foo(func) {}
 
+template<std::size_t... Is>
+void apply(std::index_sequence<Is...>)
+{
+    update(std::get<Is>(m_container)...);
+}
+
 template<typename T>
 void update(T t)
 {
     std::get<Index<T, Types...>>(m_container) = t;
-    m_observer.set(Index<T, Types...>);
-    if(m_observer.
+    m_observer.set(Index<T, Types...>{});
+    if(m_observer.all())
+        apply(std::index_sequence_for<Types...>{});
 }
 
 
