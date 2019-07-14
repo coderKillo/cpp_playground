@@ -25,21 +25,14 @@ class MultiTypeEvaluator
 public:
     MultiTypeEvaluator(eval_foo_t && func):eval_foo(func) {}
 
-template<std::size_t... Is>
-void apply(std::index_sequence<Is...>)
-{
-    update(std::get<Is>(m_container)...);
-}
-
-template<typename T>
-void update(T t)
-{
-    std::get<Index<T, Types...>>(m_container) = t;
-    m_observer.set(Index<T, Types...>{});
-    if(m_observer.all())
-        apply(std::index_sequence_for<Types...>{});
-}
-
+    template<typename T>
+    void set(T&& t)
+    {
+        std::get<T>(m_container) = std::move(t);
+        m_observer.set(Index<T, container_t>::value);
+        if(m_observer.all())
+            apply(std::index_sequence_for<Types...>{});
+    }
 
 private:
     MultiTypeEvaluator() = delete;
@@ -48,13 +41,63 @@ private:
     MultiTypeEvaluator(MultiTypeEvaluator&&) = delete;
     MultiTypeEvaluator& operator=(MultiTypeEvaluator&&) = delete;
 
+    template<std::size_t... Is>
+    void apply(std::index_sequence<Is...>)
+    {
+        eval_foo(std::move(std::get<Is>(m_container))...);
+    }
+
     std::bitset<std::tuple_size<container_t>::value> m_observer;
-    container_t m_container = {};
+    container_t m_container;
     eval_foo_t eval_foo;
 };
 
+struct MyStruct
+{
+    MyStruct() { std::cout << "default ctor" << std::endl;}
+    MyStruct(const MyStruct& m) 
+    { 
+        std::cout << "copy ctor" << std::endl;
+        i = m.i; 
+        c = m.c; 
+    }
+    MyStruct(MyStruct&& m) 
+    { 
+        std::cout << "move ctor" << std::endl;
+        i = m.i; 
+        c = m.c; 
+    }
+    MyStruct& operator=(const MyStruct& m) 
+    { 
+        std::cout << "copy oper" << std::endl;
+        i = m.i; 
+        c = m.c; 
+        return *this;
+    }
+    MyStruct& operator=(MyStruct&& m) 
+    { 
+        std::cout << "move oper" << std::endl;
+        i = m.i; 
+        c = m.c; 
+        return *this;
+    }
+    int i;
+    char c;
+};
+
+void update(MyStruct m, int i, char c)
+{
+    std::cout << m.i << m.c << i << c << std::endl;   
+}
+
+
 int main(int argc, char const *argv[])
 {
-    std::cout << (int)std::tuple_size<std::tuple<int,char,double>>::value << std::endl;   
+    MultiTypeEvaluator<MyStruct, int, char> mt(update);
+
+    mt.set<int>(1);
+    mt.set<char>('s');
+    mt.set<MyStruct>({});
+
     return 0;
 }
